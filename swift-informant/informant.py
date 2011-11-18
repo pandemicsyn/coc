@@ -19,6 +19,7 @@ from eventlet.green import socket
 from random import random
 import time
 
+
 class InformantMiddleware(object):
     """
     Informant Middleware used for sending events to statsd
@@ -34,11 +35,11 @@ class InformantMiddleware(object):
 
     def send_event(self, payload):
         try:
-            self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    
+            self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             self.udp_socket.sendto(payload, self.statsd_addr)
-        except Exception as err:
-            self.logger.critical("udp oops")
-            #udp sendto failed, but thats ok
+        except Exception:
+            #udp sendto failed (socket already in use?), but thats ok
+            self.logger.exception(_("Error trying to send statsd event"))
 
     def statsd_counter_increment(self, stats, delta=1):
         """
@@ -47,37 +48,43 @@ class InformantMiddleware(object):
         if self.statsd_sample_rate < 1:
             if random() <= self.statsd_sample_rate:
                 for item in stats:
-                    payload = "%s:%s|c|@%s" % (item, delta, self.statsd_sample_rate)
+                    payload = "%s:%s|c|@%s" % (item, delta,
+                        self.statsd_sample_rate)
                     self.send_event(payload)
         else:
             for item in stats:
                 payload = "%s:%s|c" % (item, delta)
                 self.send_event(payload)
-    
-    def statsd_event(self, env, req):
-        response = getattr(req, 'response', None)
-        if not response:
-            return
-        status_int = response.status_int
-        if getattr(req, 'client_disconnect', False) or \
-                getattr(response, 'client_disconnect', False):
-            status_int = 499
-        self.statsd_counter_increment([req.method, status_int])
 
+    def statsd_event(self, env, req):
+        #wrapping the *whole thing* incase something bad happens
+        #better safe then sorry ?
+        try:
+            response = getattr(req, 'response', None)
+            if not response:
+                #no response but we can still fire the event for the method.
+                self.statsd_counter_increment([req.method])
+            else:
+                status_int = response.status_int
+                if getattr(req, 'client_disconnect', False) or \
+                        getattr(response, 'client_disconnect', False):
+                    status_int = 499
+                self.statsd_counter_increment([req.method, status_int])
+        except Exception:
+            try:
+                self.logger.exception(_("Encountered error in statsd_event"))
+            except Exception:
+                pass
 
     def __call__(self, env, start_response):
-        
-        def start_response_snitch(status, headers):
-            return start_response(status, headers)
-
         req = Request(env)
         if 'eventlet.posthooks' in env:
             env['eventlet.posthooks'].append(
                 (self.statsd_event, (req,), {}))
-            return self.app(env, start_response_snitch)
+            return self.app(env, start_response)
         else:
-            # No posthook support better to just not gen statsd events
-            return self.app(env, start_response_snitch)
+            # No posthook support better to just not gen events
+            return self.app(env, start_response)
 
 
 def filter_factory(global_conf, **local_conf):
