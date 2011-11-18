@@ -31,10 +31,10 @@ class InformantMiddleware(object):
         self.statsd_port = int(conf.get('statsd_port', '8125'))
         self.statsd_addr = (self.statsd_host, self.statsd_port)
         self.statsd_sample_rate = float(conf.get('statsd_sample_rate', '.5'))
-        self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
     def send_event(self, payload):
         try:
+            self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)    
             self.udp_socket.sendto(payload, self.statsd_addr)
         except Exception as err:
             self.logger.critical("udp oops")
@@ -54,16 +54,34 @@ class InformantMiddleware(object):
             for item in stats:
                 payload = "%s:%s|c" % (item, delta)
                 self.send_event(payload)
+    
+    def statsd_event(self, env, req):
+        response = getattr(req, 'response', None)
+        if not response:
+            return
+        status_int = response.status_int
+        if getattr(req, 'client_disconnect', False) or \
+                getattr(response, 'client_disconnect', False):
+            status_int = 499
+        self.statsd_counter_increment([req.method, status_int])
 
 
     def __call__(self, env, start_response):
-        def start_response_snitch(status, headers):
-            req = Request(env)
-            self.statsd_counter_increment([req.method, status.split()[0]])
-            return start_response(status, headers)
         
-        return self.app(env, start_response_snitch)
-            
+        def start_response_snitch(status, headers):
+            return start_response(status, headers)
+
+        req = Request(env)
+        if 'eventlet.posthooks' in env:
+            env['eventlet.posthooks'].append(
+                (self.statsd_event, (req,), {}))
+            return self.app(env, start_response_snitch)
+        else:
+            # No post hook support better to just not gen statsd events
+            return self.app(env, start_response_snitch)
+
+
+        
 
 def filter_factory(global_conf, **local_conf):
     conf = global_conf.copy()
