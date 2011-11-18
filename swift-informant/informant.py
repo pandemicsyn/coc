@@ -17,7 +17,6 @@ from webob import Request, Response
 from swift.common.utils import split_path, get_logger
 from eventlet.green import socket
 from random import random
-import time
 
 
 class InformantMiddleware(object):
