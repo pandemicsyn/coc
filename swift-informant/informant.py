@@ -38,8 +38,7 @@ class InformantMiddleware(object):
             self.udp_socket.sendto(payload, self.statsd_addr)
         except Exception as err:
             self.logger.critical("udp oops")
-            raise
-            #pass #udp sendto failed, but thats ok
+            #udp sendto failed, but thats ok
 
     def statsd_counter_increment(self, stats, delta=1):
         """
@@ -77,11 +76,9 @@ class InformantMiddleware(object):
                 (self.statsd_event, (req,), {}))
             return self.app(env, start_response_snitch)
         else:
-            # No post hook support better to just not gen statsd events
+            # No posthook support better to just not gen statsd events
             return self.app(env, start_response_snitch)
 
-
-        
 
 def filter_factory(global_conf, **local_conf):
     conf = global_conf.copy()
