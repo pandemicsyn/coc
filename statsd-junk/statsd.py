@@ -5,13 +5,7 @@ import time
 import re
 
 counters = {}
-counter = 0
-hits = 0
-
-sp = re.compile('.*SIGTERM received.*')
-sp2 = re.compile('.*"DELETE.*')
-
-q = Queue()
+stats_seen = 0
 
 def report_stats(payload):
     try:
@@ -25,7 +19,7 @@ def report_stats(payload):
         print e
 
 
-def stats_print():
+def stats_flush():
     tstamp = int(time.time())
     flush_interval = 10 #seconds not milli
     global counters
@@ -41,19 +35,12 @@ def stats_print():
             counters[item] = 0 
         report_stats(payload)
 
-def worker():
-    global hits
-    while True:
-        msg = q.get()
-        #print msg.split(':')
-
 
 def main():
     global counters
     keycheck = re.compile(r'\s+|/|[^a-zA-Z_\-0-9\.]')
     ratecheck = re.compile('^@([\d\.]+)')
-    eventlet.spawn(worker)
-    eventlet.spawn(stats_print)
+    eventlet.spawn(stats_flush)
     global counter
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     addr = ('127.0.0.1', 8125)
@@ -92,11 +79,11 @@ def main():
                     print "error: invalid"
             else:
                 print "error: invalid"
-            counter += 1 
+            stats_seen += 1 
 
 if __name__ == '__main__':
     try:
         main()
     except KeyboardInterrupt:
-        print "\nReceived %d events" % counter
+        print "\nReceived %d events" % stats_seen
         print '\n'
