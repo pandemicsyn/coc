@@ -3,69 +3,105 @@ from eventlet.green import socket
 from eventlet.queue import Queue
 import re
 
-counter = 0
-hits = 0
+class SyslogTap(object):
 
-sp = re.compile('.*SIGTERM received.*')
-sp2 = re.compile('.*"DELETE.*')
+    def __init__(self, statsd_host='127.0.0.1', statsd_port=8125, buff=8192, 
+                listen_addr='127.0.0.1', listen_port=8126, patterns=None, 
+                debug=False):
+        self.counter = 0
+        self.hits = 0
+        self.q = Queue()
+        # key: regex
+        self.patterns = {'notice.restart': '.*SIGTERM received.*',
+                        'error.auth.stagingus':  '.*ERROR with auth for reseller StagingUS.*',
+                        'error.locktimeout.put': '.*error with PUT.*LockTimeout.*',
+                        'error.proxy.connectimeout.object': '.*ERROR with Object server.*ConnectionTimeout.*',
+                        'error.proxy.code.400': '.*code 400.*'}
+        self.statsd_addr = (statsd_host, statsd_port)
+        self.statsd_sample_rate = 1.0
+        self.comp_patterns = {} 
+        for item in self.patterns:
+            self.comp_patterns[item] = re.compile(self.patterns[item])
 
-q = Queue()
+    def recompile_regex(self, patterns):
+        for item in patterns:
+            search_patterns[item] = re.compile(patterns[item])
+        return search_patterns
 
-def stats_print():
-    global counter
-    while True:
-        eventlet.sleep(5)
-        print "%d hits, %d misses" % (hits, counter)
+    def check_line(self, line):
+        for entry in self.comp_patterns:
+            if self.comp_patterns[entry].match(line):
+                return entry
+        return None
 
-def worker():
-    global hits
-    while True:
-        msg = q.get()
-        if sp.match(msg) or sp2.match(msg):
-            hits += 1
-            #print "HIT: %s" % msg
+    def stats_print(self):
+        lastcount = 0
+        lasthit = 0
+        while True:
+            eventlet.sleep(10)
+            lps = (self.counter - lastcount) / 10
+            hps = (self.hits - lasthit) / 10
+            lastcount = self.counter
+            lasthit = self.hits
+            print "--> processing %d lines per second" % lps
+            print "--> averaging %d hits per second" % hps
+            print "--> totals: %d hits out of %d lines" % (self.hits, self.counter) 
+            
+        
+    def send_event(self, payload):
+        try:
+            self.udp_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            self.udp_socket.sendto(payload, self.statsd_addr)
+        except Exception:
+            #udp sendto failed (socket already in use?), but thats ok
+            print "error: attempting to send statsd event."
+            #self.logger.exception(_("Error trying to send statsd event"))
+
+    def statsd_counter_increment(self, stats, delta=1):
+        """
+        Increment multiple statsd stats counters
+        """
+        if self.statsd_sample_rate < 1:
+            if random() <= self.statsd_sample_rate:
+                for item in stats:
+                    payload = "%s:%s|c|@%s" % (item, delta,
+                        self.statsd_sample_rate)
+                    self.send_event(payload)
         else:
-            pass
+            for item in stats:
+                payload = "%s:%s|c" % (item, delta)
+                self.send_event(payload)
 
-def producer():
-    global counter
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    addr = ('127.0.0.1', 8126)
-    sock.bind(addr)
-    buf = 512
-    print "Listening on %s:%d" % addr
-    while 1:
-        data, addr = sock.recvfrom(buf)
-        if not data:
-            break
-        else:
-            q.put(data)
-            #print "recv: %s" % data
-            counter += 1
+    def worker(self):
+        while True:
+            msg = self.q.get()
+            matched = self.check_line(msg)
+            if matched:
+                self.statsd_counter_increment([matched])
+                self.hits +=1
+            else:
+                pass
 
+    def start(self, listen_addr='127.0.0.1', listen_port=8126, buff=8192):
+        eventlet.spawn_n(self.worker)
+        eventlet.spawn_n(self.stats_print)
+        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        bind_addr = (listen_addr, listen_port)
+        sock.bind(bind_addr)
+        print "Listening on %s:%d" % bind_addr
+        while 1:
+            data, addr = sock.recvfrom(buff)
+            if not data:
+                break
+            else:
+                self.q.put(data)
+                self.counter += 1
 
-def main():
-    eventlet.spawn(worker)
-    eventlet.spawn(stats_print)
-    global counter
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    addr = ('127.0.0.1', 8126)
-    sock.bind(addr)
-    buf = 512
-    print "Listening on %s:%d" % addr
-    while 1:
-        data, addr = sock.recvfrom(buf)
-        if not data:
-            break
-        else:
-    #        print "recv: %s" % data
-            q.put(data)
-            counter += 1
-    #
 
 if __name__ == '__main__':
     try:
-        main()
+        tap = SyslogTap()
+        tap.start()
     except KeyboardInterrupt:
         print "\nReceived %d events" % counter
         print '\n'
