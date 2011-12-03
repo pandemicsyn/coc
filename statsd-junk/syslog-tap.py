@@ -5,7 +5,7 @@ import re
 
 class SyslogTap(object):
 
-    def __init__(self, statsd_host='127.0.0.1', statsd_port=8125, buff=8192, 
+    def __init__(self, statsd_host='172.24.24.14', statsd_port=8125, buff=8192, 
                 listen_addr='127.0.0.1', listen_port=8126, patterns=None, 
                 debug=False):
         self.counter = 0
@@ -14,9 +14,13 @@ class SyslogTap(object):
         # key: regex
         self.patterns = {'notice.restart': '.*SIGTERM received.*',
                         'error.auth.stagingus':  '.*ERROR with auth for reseller StagingUS.*',
-                        'error.locktimeout.put': '.*error with PUT.*LockTimeout.*',
-                        'error.proxy.connectimeout.object': '.*ERROR with Object server.*ConnectionTimeout.*',
-                        'error.proxy.code.400': '.*code 400.*'}
+                        'error.proxy.locktimeout.put': '.*error with PUT.*LockTimeout.*',
+                        'error.proxy.timeout.object': '.*ERROR with Object server.*ConnectionTimeout.*',
+			'error.proxy.timeout.memcache': '.*Timeout talking to memcached.*',
+			'error.proxy.connect.memcache': '.*Error connecting to memcached.*',
+                        'error.object.timeout.containerupdate': 'object-server ERROR container update failed with',
+			'error.proxy.code.400': '.*code 400.*'}
+        self.debug = debug
         self.statsd_addr = (statsd_host, statsd_port)
         self.statsd_sample_rate = 1.0
         self.comp_patterns = {} 
@@ -38,15 +42,14 @@ class SyslogTap(object):
         lastcount = 0
         lasthit = 0
         while True:
-            eventlet.sleep(10)
+            eventlet.sleep(20)
             lps = (self.counter - lastcount) / 10
             hps = (self.hits - lasthit) / 10
             lastcount = self.counter
             lasthit = self.hits
-            print "--> processing %d lines per second" % lps
-            print "--> averaging %d hits per second" % hps
-            print "--> totals: %d hits out of %d lines" % (self.hits, self.counter) 
-            
+	    print "--> per second: %d lines  -  hits %d" % (lps, hps)
+            print "--> totals: %d hits  -  %d lines" % (self.hits, self.counter) 
+            print " "
         
     def send_event(self, payload):
         try:
@@ -84,7 +87,8 @@ class SyslogTap(object):
 
     def start(self, listen_addr='127.0.0.1', listen_port=8126, buff=8192):
         eventlet.spawn_n(self.worker)
-        eventlet.spawn_n(self.stats_print)
+        if self.debug:
+            eventlet.spawn_n(self.stats_print)
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         bind_addr = (listen_addr, listen_port)
         sock.bind(bind_addr)
@@ -100,8 +104,7 @@ class SyslogTap(object):
 
 if __name__ == '__main__':
     try:
-        tap = SyslogTap()
+        tap = SyslogTap(debug=True)
         tap.start()
     except KeyboardInterrupt:
-        print "\nReceived %d events" % counter
-        print '\n'
+        print "\nReceived %d events\n" % counter
