@@ -1,0 +1,37 @@
+#!/bin/bash
+
+sudo easy_install virtualenv
+
+cd ~
+
+echo "Cloning"
+sleep 2
+git clone https://github.com/openstack/swift.git
+cd ~/swift
+git remote update
+git checkout master
+git pull origin master
+
+echo "create n activate the environment"
+sleep 2
+virtualenv env --system-site-packages
+. env/bin/activate
+
+echo "setting up swift"
+sleep 2
+sudo python setup.py develop
+
+echo "remaking rings"
+sleep 2
+remakerings
+
+echo "staring services"
+sleep 2
+startmain
+
+echo "testing"
+swift -A http://127.0.0.1:8080/auth/v1.0 -U test:tester -K testing stat
+swift -A http://127.0.0.1:8080/auth/v1.0 -U test:tester -K testing stat
+cp ~/swift/test/functional/sample.conf /etc/swift/func_test.conf
+
+

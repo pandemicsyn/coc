@@ -1,0 +1,57 @@
+#!/bin/bash
+
+cd ~
+
+echo "Update swift"
+cd ~/swift
+git remote update
+git checkout master
+git pull origin master
+
+echo "activate the environment"
+sleep 2
+. env/bin/activate
+
+echo "setting up swift"
+sleep 2
+sudo python setup.py develop
+deactivate
+
+echo "stop swift services"
+swift-init all stop
+sleep 2
+
+echo "staring services"
+sleep 2
+startmain
+
+echo "testing"
+swift -A http://127.0.0.1:8080/auth/v1.0 -U test:tester -K testing stat
+swift -A http://127.0.0.1:8080/auth/v1.0 -U test:tester -K testing stat
+cp ~/swift/test/functional/sample.conf /etc/swift/func_test.conf
+
+cd ~
+echo "Deploying swift-informant"
+git clone git@github.com:pandemicsyn/swift-informant.git
+cd swift-informant
+sudo python setup.py install
+
+cd ~
+echo "Deploying statsdlog"
+git clone git@github.com:pandemicsyn/statsdlog.git
+cd statsdlog
+sudo python setup.py install
+
+cd ~
+echo "Deploy statsdpy"
+git clone git@github.com:pandemicsyn/statsdpy.git
+cd statsdpy
+sudo python setup.py install
+
+cd ~
+echo "Deploying ronin.io"
+git clone git@github.com:pandemicsyn/ronin.io.git
+
+cd ~ 
+echo "Deploying coc"
+git clone git@github.com:pandemicsyn/coc.git
