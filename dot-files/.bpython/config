@@ -1,2 +1,5 @@
 [general]
+auto_display_list = true
+syntax = true
+hist_length = 500
 color_scheme = test
