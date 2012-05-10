@@ -137,6 +137,7 @@ source ~/.host_aliases
 
 alias ronin.io="ssh -A fhines@ronin.io"
 alias bpython="python -m bpython.cli "
+alias ve=". env/bin/activate"
 
 #textmate pycheckmate pyflakes support
 export TM_PYCHECKER=/usr/local/bin/pyflakes

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+echo "Testing Swift Recon"
+cd /tmp
+nosetests --with-coverage --cover-package swift.common.middleware.recon --cover-erase /home/fhines/swift/test/unit/common/middleware/test_recon.py; rm .coverage

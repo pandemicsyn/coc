@@ -1,9 +1,12 @@
+call pathogen#infect()
+call pathogen#helptags()
 syntax on
 set ai ts=4 tw=0 sw=4 expandtab
 set hlsearch
-set paste
+" set paste
 set title
 filetype plugin on
+filetype plugin indent on
 " Increase indentation after open-braces and match close-brace indentation to
 " their open-brace indentations.
 set smartindent
@@ -20,6 +23,9 @@ set ttymouse=xterm2
 " highlight lines over 79 cols, spaces at the end of lines and tab characters
 highlight BadStyle ctermbg=darkgray ctermfg=yellow
 match BadStyle "\(\%>79v.\+\|\t\| \+$\)"
+" pep8
+let g:pep8_map='<leader>8'
+
 """"""""""""""""""""""""""""""
 " => Statusline
 """"""""""""""""""""""""""""""
@@ -42,4 +48,3 @@ function! HasPaste()
         return ''
     endif
 endfunction
-"set statusline=%t[%{strlen(&fenc)?&fenc:'none'},%{&ff}]%h%m%r%y%=%c,%l/%L\ %P

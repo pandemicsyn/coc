@@ -1,0 +1,11 @@
+#!/bin/bash
+#echo "Fixing trailing whitespace in $1"
+for i in `git status | grep modified | awk '{print $3}'`
+do
+    echo "======= $i ======"
+    echo "--> pep8"
+    pep8 $i
+    echo "--> pyflakes"
+    pyflakes $i | grep -v "undefined name '_'" | grep -v "redefinition of unused 'json'"
+    echo "=========================================="
+done

@@ -1,0 +1,7 @@
+#!/bin/bash
+echo "== ACCOUNT ======================================"
+cat /var/cache/swift/account.recon | python -m json.tool
+echo "== CONTAINER ======================================"
+cat /var/cache/swift/container.recon | python -m json.tool
+echo "== OBJECT ======================================"
+cat /var/cache/swift/object.recon | python -m json.tool

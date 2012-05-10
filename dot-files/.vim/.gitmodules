@@ -1,0 +1,30 @@
+[submodule "bundle/vim-autoclose"]
+	path = bundle/vim-autoclose
+	url = https://github.com/andrewle/vim-autoclose.git
+[submodule "bundle/color-sampler-pack"]
+	path = bundle/color-sampler-pack
+	url = https://github.com/vim-scripts/Color-Sampler-Pack.git
+[submodule "bundle/gundo"]
+	path = bundle/gundo
+	url = https://github.com/sjl/gundo.vim.git
+[submodule "bundle/lusty"]
+	path = bundle/lusty
+	url = https://github.com/sjbach/lusty.git
+[submodule "bundle/pep8"]
+	path = bundle/pep8
+	url = https://github.com/cburroughs/pep8.git
+[submodule "bundle/pydoc"]
+	path = bundle/pydoc
+	url = https://github.com/vim-scripts/pydoc.vim.git
+[submodule "bundle/pathogen"]
+	path = bundle/pathogen
+	url = https://github.com/tpope/vim-pathogen.git
+[submodule "bundle/scrollColors"]
+	path = bundle/scrollColors
+	url = https://github.com/vim-scripts/ScrollColors.git
+[submodule "bundle/supertab"]
+	path = bundle/supertab
+	url = https://github.com/ervandew/supertab.git
+[submodule "bundle/vim-virtualenv"]
+	path = bundle/vim-virtualenv
+	url = https://github.com/jmcantrell/vim-virtualenv.git
