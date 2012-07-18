@@ -1,0 +1,19 @@
+syn@cftest:~/devel/smokescreen$ python swift-tunnel2.py -C swift-tunnel.conf --cache 
+Started child 26622
+Cache enabled, memcache better buckle up.
+Started child 26623
+(26622) wsgi starting up on http://0.0.0.0:8090/
+Cache enabled, memcache better buckle up.
+(26623) wsgi starting up on http://0.0.0.0:8090/
+Started child 26624
+Cache enabled, memcache better buckle up.
+(26624) wsgi starting up on http://0.0.0.0:8090/
+Started child 26625
+Cache enabled, memcache better buckle up.
+(26625) wsgi starting up on http://0.0.0.0:8090/
+Valid Object Requested. Entering into cache.
+127.0.0.1 - - [25/Aug/2010 05:47:30] "GET /testcontainer/testdata.html HTTP/1.1" 200 1765 0.048511
+127.0.0.1 - - [25/Aug/2010 05:47:34] "GET /testcontainer/testdata.html HTTP/1.1" 200 1765 0.006186
+127.0.0.1 - - [25/Aug/2010 05:47:35] "GET /testcontainer/testdata.html HTTP/1.1" 200 1765 0.001537
+127.0.0.1 - - [25/Aug/2010 05:47:35] "GET /testcontainer/testdata.html HTTP/1.1" 200 1765 0.001008
+127.0.0.1 - - [25/Aug/2010 05:47:36] "GET /testcontainer/testdata.html HTTP/1.1" 200 1765 0.001185

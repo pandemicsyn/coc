@@ -1,6 +1,7 @@
 call pathogen#infect()
 call pathogen#helptags()
 syntax on
+set vb
 set ai ts=4 tw=0 sw=4 expandtab
 set hlsearch
 " set paste

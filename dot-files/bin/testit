@@ -2,4 +2,4 @@
 
 echo "Testing Swift Recon"
 cd /tmp
-nosetests --with-coverage --cover-package swift.common.middleware.recon --cover-erase /home/fhines/swift/test/unit/common/middleware/test_recon.py; rm .coverage
+nosetests --with-coverage --cover-package swift.common.middleware.ring_builder --cover-erase /home/fhines/swift/test/unit/common/middleware/test_ring_builder.py; rm .coverage

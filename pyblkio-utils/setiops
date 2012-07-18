@@ -1,0 +1,108 @@
+#!/usr/bin/python
+
+import os
+import sys
+import optparse
+
+
+
+DEVICE = None
+
+def getlimits(limittype):
+    devices = []
+    if limittype is "w":
+        file = open("/cgroup/blkio/blkio.throttle.write_iops_device")
+    elif limittype is "r":
+        file = open("/cgroup/blkio/blkio.throttle.read_iops_device")
+    
+    while 1:
+        device = {}
+        entry = file.readline()
+        if not entry:
+            break
+        major = entry.split()[0].split(":")[0]
+        minor = entry.split()[0].split(":")[1]
+        limit = entry.split()[1]
+        device['major'] = major
+        device['minor'] = minor
+        device['limit'] = limit
+        devices.append(device)
+
+        for line in open('/proc/partitions').readlines()[2:]:
+            major, minor, blocks, kernel_device = line.strip().split()
+            device = [d for d in devices
+                if d['major'] == major and d['minor'] == minor]
+            if device:
+                device[0]['kernel_device'] = kernel_device
+    return devices
+    
+def showlimits():
+    print "blkio write limits:"
+    devices = getlimits("w")
+    if devices:
+        for device in devices:
+            print "\t%s [%s:%s]: %s/sec" % (device['kernel_device'], 
+            device['major'], device['minor'], device['limit'])
+        print ""
+    else:
+        print "\tNo limits set"
+    print "blkio read limits:"
+    devices = getlimits("r")
+    if devices:
+        for device in devices:
+            print "\t%s [%s:%s]: %s/sec" % (device['kernel_device'], 
+            device['major'], device['minor'], device['limit'])
+        print ""
+    else:
+        print "\tNo limits set"
+
+def set_read_iops(major, minor, riops):
+    global DEVICE
+    with open("/cgroup/blkio/blkio.throttle.read_iops_device", "a") as f:
+        f.write("%i:%i %i" % (major, minor, riops))
+        f.close()
+        print "Set %s allowed Read IOPS/sec to: %i" % (DEVICE, riops)
+
+def set_write_iops(major, minor, wiops):
+    global DEVICE
+    with open("/cgroup/blkio/blkio.throttle.write_iops_device", "a") as f:
+        f.write("%i:%i %s" % (major, minor, wiops))
+        f.close()
+    print "Set %s allowed Write IOPS/sec to: %i" % (DEVICE, wiops)
+
+
+def main():
+    global DEVICE
+    usage = "usage: %prog -d device [-s limit] [-r limit] [--flush]"
+    p = optparse.OptionParser(usage)
+    p.add_option('--write', '-w', type="int", default=None, help="set write limit")
+    p.add_option('--read', '-r', type="int", default=None, help="set read limit")
+    p.add_option('--device', '-d', default=None, help="Device to operate on")
+    p.add_option('--flush', '-f', action="store_true", help="Clear device limits")
+    options, arguments = p.parse_args()
+
+    if options.device is None:
+        print "Error: You need to specify a device!"
+        p.print_help()
+        sys.exit(1)
+    else:
+        DEVICE = options.device
+        major = os.major(os.lstat(DEVICE).st_rdev)
+        minor = os.minor(os.lstat(DEVICE).st_rdev)
+        if options.write is not None or options.read is not None:
+            if options.write is not None:
+                set_write_iops(major, minor, options.write)
+            if options.read is not None:
+                set_read_iops(major, minor, options.read)
+        elif options.flush:
+            print "I'm only pretending to flush..."
+        else:
+            print "Limits for all devices:\n" 
+            showlimits()
+    
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        print '\nProbably hung..time to gtfo'

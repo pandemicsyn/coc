@@ -134,14 +134,17 @@ PROMPT_COMMAND=exitstatus
 export GIT_SSL_NO_VERIFY=true
 
 source ~/.host_aliases
+source ~/.swift-creds
 
 alias ronin.io="ssh -A fhines@ronin.io"
 alias bpython="python -m bpython.cli "
 alias ve=". env/bin/activate"
+alias www="python -m SimpleHTTPServer"
 
 #textmate pycheckmate pyflakes support
 export TM_PYCHECKER=/usr/local/bin/pyflakes
 alias pylint="pylint --disable-msg=E1101 --disable-msg=E1103"
-
-[[ -s "$HOME/.rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm"
+alias w8="watch -n 5 pep8"
+#ruby bullshit
 PATH=$PATH:$HOME/.rvm/bin # Add RVM to PATH for scripting
+[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*

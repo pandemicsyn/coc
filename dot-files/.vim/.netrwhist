@@ -1,4 +1,8 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhist_cnt =2
+let g:netrw_dirhist_cnt =6
 let g:netrw_dirhist_1='/home/fhines/benderBot/plugins/CDNLogs'
 let g:netrw_dirhist_2='/home/fhines/swift/test'
+let g:netrw_dirhist_3='/etc/swift'
+let g:netrw_dirhist_4='/home/fhines/ringmaster/ringmaster'
+let g:netrw_dirhist_5='/etc/swift'
+let g:netrw_dirhist_6='/mnt/hgfs/fhines/statsdpy/utils'

@@ -1,0 +1,51 @@
+USAGE:
+
+syn@masada:~/devel/pyblkio-utils$ python pyiops --help
+Usage: pyiops [-l] [-s] [--refresh seconds] -d [device]
+
+Options:
+  -h, --help            show this help message and exit
+  -l, --limits          show blkio limits
+  -s, --stats           print blkio stats for device
+  -d DEVICE, --device=DEVICE
+                        Default = /dev/sda
+  --refresh=REFRESH     Refresh stats every X seconds
+
+For an lvm volume you'll wanna use something along the lines of:
+
+./pyiops -d /dev/mapper/vg1-lv1 -s --refresh 1
+=========================================
+
+syn@cftest:/home/fhines# python pyiops -l
+blkio write limits:
+    No limits set
+blkio read limits:
+    No limits set
+
+=========================================
+
+syn@masada:/home/fhines# python pyiops -s -d /dev/sda | head
+IOPS completed:
+
+    Read: 453
+    Write: 347000
+    Sync: 342912
+    Async: 4541
+    Total: 347453
+
+Bytes transferred:
+
+    Read: 3651584
+
+
+========================================
+
+#root@test:/home/fhines# python setiops -d /dev/sda -w 250 -r 2000
+#Set /dev/sda allowed Write IOPS/sec to: 250
+#Set /dev/sda allowed Read IOPS/sec to: 2000
+#root@test:/home/fhines# python setiops -d /dev/sda -r 0
+#Set /dev/sda allowed Read IOPS/sec to: 0
+#root@test:/home/fhines# python setiops -d /dev/sda
+#Limits for all devices:
+
+========================================
