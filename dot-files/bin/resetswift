@@ -1,6 +1,6 @@
 #!/bin/bash
 
-swift-init all stop
+sudo swift-init all stop
 sudo find /var/log/swift -type f -exec rm -f {} \;
 sudo umount /mnt/sdb1
 sudo mkfs.xfs -f -i size=1024 /dev/sdb1

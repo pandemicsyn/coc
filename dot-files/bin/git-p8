@@ -1,0 +1,3 @@
+git diff master -U0 | grep "^+ " | sed -e 's/+//g' > /tmp/.pep8ish
+pep8 /tmp/.pep8ish | grep -v "E113 unexpected indentation"
+rm /tmp/.pep8ish
