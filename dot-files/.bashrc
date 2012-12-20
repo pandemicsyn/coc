@@ -99,7 +99,7 @@ if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
 fi
 
 export SWIFT_TEST_CONFIG_FILE=/etc/swift/func_test.conf
-export PATH=${PATH}:~/bin
+export PATH=${PATH}:~/bin:/usr/local/sbin
 
 PROJECT=openstack/swift
 USERNAME=pandemicsyn
@@ -135,6 +135,9 @@ export GIT_SSL_NO_VERIFY=true
 
 source ~/.host_aliases
 source ~/.swift-creds
+if [ -f ~/.nova-creds ]; then
+    source ~/.nova-creds
+fi
 
 alias ronin.io="ssh -A fhines@ronin.io"
 alias bpython="python -m bpython.cli "
@@ -143,5 +146,12 @@ alias www="python -m SimpleHTTPServer"
 
 #textmate pycheckmate pyflakes support
 export TM_PYCHECKER=/usr/local/bin/pyflakes
-alias pylint="pylint --disable-msg=E1101 --disable-msg=E1103"
+alias pylint="pylint --disable=E1101 --disable=E1103"
 alias w8="watch -n 5 pep8"
+alias pep8changed="git diff --name-only master | grep -e '\.py$' | egrep -v '.*test_.*\.py$' | xargs pep8"
+alias pyflakeschanged="git diff --name-only master | grep -e '\.py$' | egrep -v '.*test_.*\.py$' | xargs pyflakes"
+alias pylintchanged="git diff --name-only master | grep -e '\.py$' | egrep -v '.*test_.*\.py$' | xargs pylint"
+
+if [ -f ~/.ssh/id_rsa.work ]; then
+    ssh-add ~/.ssh/id_rsa.work
+fi

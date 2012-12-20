@@ -1,5 +1,7 @@
 call pathogen#infect()
 call pathogen#helptags()
+" let g:SuperTabDefaultCompletionType = "context"
+let g:jedi#popup_on_dot = 1
 syntax on
 set vb
 set ai ts=4 tw=0 sw=4 expandtab
