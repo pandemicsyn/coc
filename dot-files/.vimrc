@@ -20,15 +20,17 @@ set incsearch
 set scrolloff=4
 " Turns on syntax highlighting.
 syn enable
+au BufRead,BufNewFile *.go set filetype=go
 " Turn on mouse mode.
 set mouse=a
 set ttymouse=xterm2
 " highlight lines over 79 cols, spaces at the end of lines and tab characters
-highlight BadStyle ctermbg=darkgray ctermfg=yellow
+highlight BadStyle ctermbg=darkblue ctermfg=yellow
 match BadStyle "\(\%>79v.\+\|\t\| \+$\)"
 " pep8
 let g:pep8_map='<leader>8'
-
+" fucking pyflakes highlighting
+highlight SpellBad term=reverse ctermbg=1
 """"""""""""""""""""""""""""""
 " => Statusline
 """"""""""""""""""""""""""""""
