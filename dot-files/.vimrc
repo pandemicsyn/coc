@@ -1,5 +1,7 @@
 call pathogen#infect()
 call pathogen#helptags()
+let g:neocomplcache_enable_at_startup = 1
+set nocompatible
 " let g:SuperTabDefaultCompletionType = "context"
 let g:jedi#popup_on_dot = 1
 syntax on

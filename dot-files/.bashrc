@@ -124,7 +124,9 @@ then
     PS1="${GREEN}\u@\h:\w${OFF}$(__git_ps1)$(check_virt_env)\$ "
     echo -ne "\033]0;${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}";echo -ne "\007"
 else
-        PS1="${RED}\u@\h:\w${OFF}$(__git_ps1)\$${OFF} "
+    TMP="${USER}@${HOSTNAME%%.*}:${PWD/#$HOME/~}"
+    RPS1=`echo $TMP | python ~/.reverseit.py`
+    PS1="（╯°□°）╯ ${RED}$PR${OFF}$(__git_ps1)\$ "
 fi
     PS2="${BOLD}>${OFF} "
 }
@@ -144,7 +146,6 @@ alias bpython="python -m bpython.cli "
 alias ve=". env/bin/activate"
 alias www="python -m SimpleHTTPServer"
 
-#textmate pycheckmate pyflakes support
 export TM_PYCHECKER=/usr/local/bin/pyflakes
 alias pylint="pylint --disable=E1101 --disable=E1103"
 alias w8="watch -n 5 pep8"
@@ -152,6 +153,11 @@ alias pep8changed="git diff --name-only master | grep -e '\.py$' | egrep -v '.*t
 alias pyflakeschanged="git diff --name-only master | grep -e '\.py$' | egrep -v '.*test_.*\.py$' | xargs pyflakes"
 alias pylintchanged="git diff --name-only master | grep -e '\.py$' | egrep -v '.*test_.*\.py$' | xargs pylint"
 
-if [ -f ~/.ssh/id_rsa.work ]; then
-    ssh-add ~/.ssh/id_rsa.work
+if [ -f ~/.ssh/id_rsa.2013 ]; then
+    ssh-add ~/.ssh/id_rsa.2013
 fi
+
+
+
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
