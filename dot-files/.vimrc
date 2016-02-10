@@ -1,9 +1,54 @@
-call pathogen#infect()
-call pathogen#helptags()
-let g:neocomplcache_enable_at_startup = 1
+" call pathogen#infect()
+" call pathogen#helptags()
+
+"if has("gui_running")
+"colorscheme heroku
+    "    colorscheme flat2
+    syn keyword MyGroup mux
+    " Then EITHER (define your own colour scheme):
+ ""   hi MyGroup guifg=Blue ctermfg=Blue term=bold
+    " " OR (make the colour scheme match an existing one):
+    " hi link MyGroupName Todo
+"else
+"    colorscheme flat2
+"endif
+call pathogen#runtime_append_all_bundles()
+let g:tagbar_type_go = {
+    \ 'ctagstype' : 'go',
+    \ 'kinds'     : [
+        \ 'p:package',
+        \ 'i:imports:1',
+        \ 'c:constants',
+        \ 'v:variables',
+        \ 't:types',
+        \ 'n:interfaces',
+        \ 'w:fields',
+        \ 'e:embedded',
+        \ 'm:methods',
+        \ 'r:constructor',
+        \ 'f:functions'
+    \ ],
+    \ 'sro' : '.',
+    \ 'kind2scope' : {
+        \ 't' : 'ctype',
+        \ 'n' : 'ntype'
+    \ },
+    \ 'scope2kind' : {
+        \ 'ctype' : 't',
+        \ 'ntype' : 'n'
+    \ },
+    \ 'ctagsbin'  : 'gotags',
+    \ 'ctagsargs' : '-sort -silent'
+    \ }
+let g:airline_powerline_fonts = 1
+let g:airline_theme = "kolor"
+filetype off
+" let g:neocomplcache_enable_at_startup = 1
+" let g:neocomplete#enable_at_startup = 1
 set nocompatible
-" let g:SuperTabDefaultCompletionType = "context"
-let g:jedi#popup_on_dot = 1
+filetype plugin indent on
+syntax on
+set noshowmode
 syntax on
 set vb
 set ai ts=4 tw=0 sw=4 expandtab
@@ -27,8 +72,9 @@ au BufRead,BufNewFile *.go set filetype=go
 set mouse=a
 set ttymouse=xterm2
 " highlight lines over 79 cols, spaces at the end of lines and tab characters
-highlight BadStyle ctermbg=darkblue ctermfg=yellow
+highlight BadStyle ctermfg=yellow
 match BadStyle "\(\%>79v.\+\|\t\| \+$\)"
+autocmd FileType go setlocal noexpandtab shiftwidth=4 tabstop=4 softtabstop=4 nolist
 " pep8
 let g:pep8_map='<leader>8'
 " fucking pyflakes highlighting
@@ -55,3 +101,29 @@ function! HasPaste()
         return ''
     endif
 endfunction
+
+autocmd FileType go setlocal noexpandtab shiftwidth=4 tabstop=4 softtabstop=4 nolist
+" let g:go_fmt_command = "goimports"
+let g:go_fmt_command = "goimports"
+
+au FileType go nmap <Leader>gd <Plug>(go-doc)
+au FileType go nmap <Leader>gv <Plug>(go-doc-vertical)
+au FileType go nmap <Leader>gb <Plug>(go-doc-browser)
+set number
+au FileType go nmap <leader>r <Plug>(go-run)
+au FileType go nmap <leader>b <Plug>(go-build)
+au FileType go nmap <leader>t <Plug>(go-test)
+au FileType go nmap <leader>c <Plug>(go-coverage)
+let g:go_highlight_array_whitespace_error = 1
+let g:go_highlight_chan_whitespace_error = 1
+let g:go_highlight_extra_types = 1
+let g:go_highlight_space_tab_error = 1
+let g:go_highlight_trailing_whitespace_error = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_structs = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_build_constraints = 1
+let g:go_textobj_enabled = 1
+colorscheme heroku
+let g:rehash256 = 1
